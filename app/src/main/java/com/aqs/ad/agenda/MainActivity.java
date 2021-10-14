@@ -2,6 +2,8 @@ package com.aqs.ad.agenda;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,6 +12,8 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.UserDictionary;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,6 +24,9 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
+
+import com.aqs.ad.agenda.settings.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,9 +47,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.v(TAG,"onDestroy");
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_ajustes) {
+            viewSettings();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -130,7 +153,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void search() {
-
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String email = sharedPreferences.getString("email", "no existe"+"\n");
+        tvResult.append(" " + email);
         /*
          * buscar entre los contactos
          * ContentProvider Proveedor de contenidos
@@ -239,5 +264,15 @@ public class MainActivity extends AppCompatActivity {
         builder.create().show();
 
     }
+
+    private void viewSettings() {
+        //intent - intención
+        //intenciones explícitas, o implícitas
+        //explícita: definir que quiero ir desde el contaxto actual a un contexto
+        //que se crea con la clase SettingsActivity
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
 
 }
