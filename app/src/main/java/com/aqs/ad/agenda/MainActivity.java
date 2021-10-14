@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void search() {
 
-        tvResult.setText("Raw Meat");
         /*
          * buscar entre los contactos
          * ContentProvider Proveedor de contenidos
@@ -187,9 +186,8 @@ public class MainActivity extends AppCompatActivity {
             nombre = cursor2.getString(columnaNombre);
             numero = cursor2.getString(columnaNumero);
             Log.v(TAG, nombre + ": "+numero);
-            tvResult.append("Nombre: "+nombre+" Numero: "+numero);
+            tvResult.append("Nombre: "+nombre+"\n"+"Numero: "+numero+"\n"+"\n");
         }
-
 
     }
 
