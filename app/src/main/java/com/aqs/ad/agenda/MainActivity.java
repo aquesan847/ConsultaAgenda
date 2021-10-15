@@ -1,6 +1,7 @@
 package com.aqs.ad.agenda;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -136,6 +137,13 @@ public class MainActivity extends AppCompatActivity {
         etPhone = findViewById(R.id.etPhone);
         tvResult = findViewById(R.id.tvResult);
 
+        SharedPreferences preferenciasActividad = getPreferences(Context.MODE_PRIVATE);
+        String lastSearch = preferenciasActividad.getString(getString(R.string.last_search), "");
+
+        if(!lastSearch.isEmpty()){
+            etPhone.setText(lastSearch);
+        }
+
         btSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -153,67 +161,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void search() {
+
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String email = sharedPreferences.getString("email", "no existe"+"\n");
-        tvResult.append(" " + email);
-        /*
-         * buscar entre los contactos
-         * ContentProvider Proveedor de contenidos
-         * ContentResolver Consultor de contenidos
-         * Queries the user dictionary and returns results
-         * url: https://ieszaidinvergeles.org/carpeta/carpeta2/pagina.html?dato=1
-         * uri: protocolo://direccion/ruta/recurso
-         */
+        String email = sharedPreferences.getString(getString(R.string.settings_email), getString(R.string.no_email));
+        tvResult.append(email+"\n");
 
-        /*Cursor cursor = getContentResolver().query(
-                UserDictionary.Words.CONTENT_URI,   // Then content URI of the words table
-                new String[] {"projection"},        // The columns to return for each row
-                "selectionClause",                  // Selection criteria
-                new String[] {"selectionArgs"},    // Selection criteria
-                "sortOrder");            */ // The sort order for the returned rows
 
-        /*Uri uri = ContactsContract.Contacts.CONTENT_URI;
-        String proyeccion[] = new String[]{ContactsContract.Contacts.DISPLAY_NAME};
-        String seleccion = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ? and " +
-                                    ContactsContract.Contacts.HAS_PHONE_NUMBER + "= ?";
-        String argumentos[] = new String[]{"1","1"};
-        //seleccion = null;     Con los null muestran todos, tengan o no números
-        //argumentos = null;
-        String orden = ContactsContract.Contacts.DISPLAY_NAME + " collate localized asc";
+        String phone = etPhone.getText().toString();
+
+        SharedPreferences preferenciasActividad = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferenciasActividad.edit();
+        editor.putString(getString(R.string.last_search), phone);
+        editor.commit();
+
+
+        phone = searchFormat(phone);
+
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        String proyeccion[] = new  String[] {ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
+        String seleccion = ContactsContract.CommonDataKinds.Phone.NUMBER + " like ?";
+        String argumentos[] = new String[]{phone};
+        String orden = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
         Cursor cursor = getContentResolver().query(uri, proyeccion, seleccion, argumentos, orden);
         String[] columnas = cursor.getColumnNames();
-        for (String s : columnas) {
-            Log.v(TAG,s);
-        }
-        String displayName;
-        int columna = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-        while (cursor.moveToNext()){
-            displayName = cursor.getString(columna);
-            Log.v(TAG, displayName);
-        }*/
 
-        Uri uri2 = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        String proyeccion2[] = new  String[] {ContactsContract.CommonDataKinds.Phone.NUMBER,
-                                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
-        String seleccion2 = ContactsContract.CommonDataKinds.Phone.NUMBER + " like ?";
-        String argumentos2[] = new String[]{etPhone.getText().toString()+"%"};
-        String orden2 = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
-        Cursor cursor2 = getContentResolver().query(uri2, proyeccion2, seleccion2, argumentos2, orden2);
-        String[] columnas2 = cursor2.getColumnNames();
-        for (String s : columnas2) {
-            Log.v(TAG,s);
-        }
-        int columnaNombre = cursor2.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-        int columnaNumero = cursor2.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+        int columnaNombre = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+        int columnaNumero = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
         String nombre,numero;
 
-        while (cursor2.moveToNext()){
-            nombre = cursor2.getString(columnaNombre);
-            numero = cursor2.getString(columnaNumero);
-            Log.v(TAG, nombre + ": "+numero);
-            tvResult.append("Nombre: "+nombre+"\n"+"Numero: "+numero+"\n"+"\n");
+        while (cursor.moveToNext()){
+            nombre = cursor.getString(columnaNombre);
+            numero = cursor.getString(columnaNumero);
+            for(String s: columnas){
+                int pos = cursor.getColumnIndex(s);
+                String valor = cursor.getString(pos);
+                tvResult.append(s+" "+valor+"\n");
+            }
         }
 
+    }
+
+    private String searchFormat(String phone) {
+        String newString = "";
+        for (char ch: phone.toCharArray()){
+            newString += ch + "%";
+        }
+        return newString;
     }
 
 
@@ -276,3 +271,41 @@ public class MainActivity extends AppCompatActivity {
 
 
 }
+
+
+
+/*
+ * buscar entre los contactos
+ * ContentProvider Proveedor de contenidos
+ * ContentResolver Consultor de contenidos
+ * Queries the user dictionary and returns results
+ * url: https://ieszaidinvergeles.org/carpeta/carpeta2/pagina.html?dato=1
+ * uri: protocolo://direccion/ruta/recurso
+ */
+
+        /*Cursor cursor = getContentResolver().query(
+                UserDictionary.Words.CONTENT_URI,   // Then content URI of the words table
+                new String[] {"projection"},        // The columns to return for each row
+                "selectionClause",                  // Selection criteria
+                new String[] {"selectionArgs"},    // Selection criteria
+                "sortOrder");            */ // The sort order for the returned rows
+
+        /*Uri uri = ContactsContract.Contacts.CONTENT_URI;
+        String proyeccion[] = new String[]{ContactsContract.Contacts.DISPLAY_NAME};
+        String seleccion = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ? and " +
+                                    ContactsContract.Contacts.HAS_PHONE_NUMBER + "= ?";
+        String argumentos[] = new String[]{"1","1"};
+        //seleccion = null;     Con los null muestran todos, tengan o no números
+        //argumentos = null;
+        String orden = ContactsContract.Contacts.DISPLAY_NAME + " collate localized asc";
+        Cursor cursor = getContentResolver().query(uri, proyeccion, seleccion, argumentos, orden);
+        String[] columnas = cursor.getColumnNames();
+        for (String s : columnas) {
+            Log.v(TAG,s);
+        }
+        String displayName;
+        int columna = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+        while (cursor.moveToNext()){
+            displayName = cursor.getString(columna);
+            Log.v(TAG, displayName);
+        }*/
