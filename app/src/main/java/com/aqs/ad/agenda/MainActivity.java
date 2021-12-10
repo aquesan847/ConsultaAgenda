@@ -161,12 +161,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void search() {
-
-
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String email = sharedPreferences.getString(getString(R.string.settings_email), getString(R.string.no_email));
         tvResult.append(email+"\n");
-
 
         String phone = etPhone.getText().toString();
 
@@ -174,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = preferenciasActividad.edit();
         editor.putString(getString(R.string.last_search), phone);
         editor.commit();
-
 
         phone = searchFormat(phone);
 
